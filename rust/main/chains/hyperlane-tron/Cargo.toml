@@ -1,0 +1,29 @@
+cargo-features = ["workspace-inheritance"]
+
+[package]
+name = "hyperlane-tron"
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license-file.workspace = true
+publish.workspace = true
+version.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+derive-new.workspace = true
+ethers.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+url.workspace = true
+
+heliosphere = "0.3"
+heliosphere-core = "0.3"
+heliosphere-signer = "0.3"
+
+hyperlane-core = { path = "../../hyperlane-core", features = ["async"] }
+
+[build-dependencies]
+abigen = { path = "../../utils/abigen", features = ["ethers"] }

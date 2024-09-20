@@ -20,6 +20,7 @@ use hyperlane_ethereum::{
 };
 use hyperlane_fuel as h_fuel;
 use hyperlane_sealevel as h_sealevel;
+use hyperlane_tron as h_tron;
 
 use crate::{
     metrics::AgentMetricsConf,
@@ -113,6 +114,8 @@ pub enum ChainConnectionConf {
     Sealevel(h_sealevel::ConnectionConf),
     /// Cosmos configuration.
     Cosmos(h_cosmos::ConnectionConf),
+    /// Tron configuration.
+    Tron(h_tron::ConnectionConf),
 }
 
 impl ChainConnectionConf {
@@ -123,6 +126,7 @@ impl ChainConnectionConf {
             Self::Fuel(_) => HyperlaneDomainProtocol::Fuel,
             Self::Sealevel(_) => HyperlaneDomainProtocol::Sealevel,
             Self::Cosmos(_) => HyperlaneDomainProtocol::Cosmos,
+            Self::Tron(_) => HyperlaneDomainProtocol::Tron,
         }
     }
 
@@ -193,6 +197,10 @@ impl ChainConf {
                 )?;
                 Ok(Box::new(provider) as Box<dyn HyperlaneProvider>)
             }
+            ChainConnectionConf::Tron(conf) => {
+                let provider = h_tron::TronProvider::new(locator.domain.clone(), conf.clone())?;
+                Ok(Box::new(provider) as Box<dyn HyperlaneProvider>)
+            }
         }
         .context(ctx)
     }
@@ -223,6 +231,12 @@ impl ChainConf {
             ChainConnectionConf::Cosmos(conf) => {
                 let signer = self.cosmos_signer().await.context(ctx)?;
                 h_cosmos::CosmosMailbox::new(conf.clone(), locator.clone(), signer.clone())
+                    .map(|m| Box::new(m) as Box<dyn Mailbox>)
+                    .map_err(Into::into)
+            }
+            ChainConnectionConf::Tron(conf) => {
+                let signer = self.tron_signer().await.context(ctx)?;
+                h_tron::TronMailbox::new(conf.clone(), locator, signer)
                     .map(|m| Box::new(m) as Box<dyn Mailbox>)
                     .map_err(Into::into)
             }
@@ -257,6 +271,11 @@ impl ChainConf {
                     h_cosmos::CosmosMerkleTreeHook::new(conf.clone(), locator.clone(), signer)?;
 
                 Ok(Box::new(hook) as Box<dyn MerkleTreeHook>)
+            }
+            ChainConnectionConf::Tron(conf) => {
+                h_tron::TronMerkleTreeHook::new(conf.clone(), locator)
+                    .map(|m| Box::new(m) as Box<dyn MerkleTreeHook>)
+                    .map_err(Into::into)
             }
         }
         .context(ctx)
@@ -295,6 +314,14 @@ impl ChainConf {
                     locator,
                     signer,
                     reorg_period,
+                )?);
+                Ok(indexer as Box<dyn SequenceAwareIndexer<HyperlaneMessage>>)
+            }
+            ChainConnectionConf::Tron(conf) => {
+                let indexer = Box::new(h_tron::TronMailboxIndexer::new(
+                    conf.clone(),
+                    locator,
+                    self.reorg_period.clone(),
                 )?);
                 Ok(indexer as Box<dyn SequenceAwareIndexer<HyperlaneMessage>>)
             }
@@ -338,6 +365,14 @@ impl ChainConf {
                 )?);
                 Ok(indexer as Box<dyn SequenceAwareIndexer<H256>>)
             }
+            ChainConnectionConf::Tron(conf) => {
+                let indexer = Box::new(h_tron::TronMailboxIndexer::new(
+                    conf.clone(),
+                    locator,
+                    self.reorg_period.clone(),
+                )?);
+                Ok(indexer as Box<dyn SequenceAwareIndexer<H256>>)
+            }
         }
         .context(ctx)
     }
@@ -376,6 +411,9 @@ impl ChainConf {
                     signer,
                 )?);
                 Ok(paymaster as Box<dyn InterchainGasPaymaster>)
+            }
+            ChainConnectionConf::Tron(_) => {
+                todo!()
             }
         }
         .context(ctx)
@@ -419,6 +457,9 @@ impl ChainConf {
                     reorg_period,
                 )?);
                 Ok(indexer as Box<dyn SequenceAwareIndexer<InterchainGasPayment>>)
+            }
+            ChainConnectionConf::Tron(_) => {
+                todo!()
             }
         }
         .context(ctx)
@@ -465,6 +506,14 @@ impl ChainConf {
                 )?);
                 Ok(indexer as Box<dyn SequenceAwareIndexer<MerkleTreeInsertion>>)
             }
+            ChainConnectionConf::Tron(conf) => {
+                let indexer = Box::new(h_tron::TronMerkleTreeHookIndexer::new(
+                    conf.clone(),
+                    locator,
+                    self.reorg_period.clone(),
+                )?);
+                Ok(indexer as Box<dyn SequenceAwareIndexer<MerkleTreeInsertion>>)
+            }
         }
         .context(ctx)
     }
@@ -491,6 +540,16 @@ impl ChainConf {
                 let va = Box::new(h_cosmos::CosmosValidatorAnnounce::new(
                     conf.clone(),
                     locator.clone(),
+                    signer,
+                )?);
+
+                Ok(va as Box<dyn ValidatorAnnounce>)
+            }
+            ChainConnectionConf::Tron(conf) => {
+                let signer = self.tron_signer().await.context(ctx)?;
+                let va = Box::new(h_tron::TronValidatorAnnounce::new(
+                    conf.clone(),
+                    locator,
                     signer,
                 )?);
 
@@ -535,6 +594,9 @@ impl ChainConf {
                 )?);
                 Ok(ism as Box<dyn InterchainSecurityModule>)
             }
+            ChainConnectionConf::Tron(_) => {
+                todo!()
+            }
         }
         .context(ctx)
     }
@@ -569,6 +631,9 @@ impl ChainConf {
                 )?);
                 Ok(ism as Box<dyn MultisigIsm>)
             }
+            ChainConnectionConf::Tron(_) => {
+                todo!()
+            }
         }
         .context(ctx)
     }
@@ -602,6 +667,9 @@ impl ChainConf {
                     signer,
                 )?);
                 Ok(ism as Box<dyn RoutingIsm>)
+            }
+            ChainConnectionConf::Tron(_) => {
+                todo!()
             }
         }
         .context(ctx)
@@ -638,6 +706,9 @@ impl ChainConf {
 
                 Ok(ism as Box<dyn AggregationIsm>)
             }
+            ChainConnectionConf::Tron(_) => {
+                todo!()
+            }
         }
         .context(ctx)
     }
@@ -666,6 +737,9 @@ impl ChainConf {
             ChainConnectionConf::Cosmos(_) => {
                 Err(eyre!("Cosmos does not support CCIP read ISM yet")).context(ctx)
             }
+            ChainConnectionConf::Tron(_) => {
+                todo!()
+            }
         }
         .context(ctx)
     }
@@ -690,6 +764,7 @@ impl ChainConf {
                     Box::new(conf.build::<h_sealevel::Keypair>().await?)
                 }
                 ChainConnectionConf::Cosmos(_) => Box::new(conf.build::<h_cosmos::Signer>().await?),
+                ChainConnectionConf::Tron(_) => Box::new(conf.build::<h_tron::Signer>().await?),
             };
             Ok(Some(chain_signer))
         } else {
@@ -712,6 +787,10 @@ impl ChainConf {
     }
 
     async fn cosmos_signer(&self) -> Result<Option<h_cosmos::Signer>> {
+        self.signer().await
+    }
+
+    async fn tron_signer(&self) -> Result<Option<h_tron::Signer>> {
         self.signer().await
     }
 

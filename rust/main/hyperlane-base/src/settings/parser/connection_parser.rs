@@ -203,5 +203,9 @@ pub fn build_connection_conf(
         HyperlaneDomainProtocol::Cosmos => {
             build_cosmos_connection_conf(rpcs, chain, err, operation_batch)
         }
+        HyperlaneDomainProtocol::Tron => rpcs
+            .iter()
+            .next()
+            .map(|url| ChainConnectionConf::Tron(h_tron::ConnectionConf { url: url.clone() })),
     }
 }
