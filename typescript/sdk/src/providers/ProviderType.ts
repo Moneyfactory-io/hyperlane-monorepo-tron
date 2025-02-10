@@ -15,6 +15,11 @@ import type {
   providers as EV5Providers,
   PopulatedTransaction as EV5Transaction,
 } from 'ethers';
+import {
+  TronWeb,
+  Contract as TronWebContract,
+  Types as TronWebTypes,
+} from 'tronweb';
 import type {
   GetContractReturnType,
   PublicClient,
@@ -31,6 +36,7 @@ export enum ProviderType {
   CosmJs = 'cosmjs',
   CosmJsWasm = 'cosmjs-wasm',
   GnosisTxBuilder = 'gnosis-txBuilder',
+  Tron = 'tron',
 }
 
 export const PROTOCOL_TO_DEFAULT_PROVIDER_TYPE: Record<
@@ -124,13 +130,20 @@ export interface CosmJsWasmProvider
   provider: Promise<CosmWasmClient>;
 }
 
+export interface TronProvider extends TypedProviderBase<TronWeb> {
+  type: ProviderType.Tron;
+  // maybe switch to Trx object
+  provider: TronWeb;
+}
+
 export type TypedProvider =
   | EthersV5Provider
   // | EthersV6Provider
   | ViemProvider
   | SolanaWeb3Provider
   | CosmJsProvider
-  | CosmJsWasmProvider;
+  | CosmJsWasmProvider
+  | TronProvider;
 
 /**
  * Contracts with discriminated union of provider type
@@ -169,13 +182,19 @@ export interface CosmJsWasmContract
   contract: CosmWasmContract;
 }
 
+export interface TronContract extends TypedContractBase<TronWebContract> {
+  type: ProviderType.Tron;
+  contract: TronWebContract;
+}
+
 export type TypedContract =
   | EthersV5Contract
   // | EthersV6Contract
   | ViemContract
   | SolanaWeb3Contract
   | CosmJsContract
-  | CosmJsWasmContract;
+  | CosmJsWasmContract
+  | TronContract;
 
 /**
  * Transactions with discriminated union of provider type
@@ -216,13 +235,20 @@ export interface CosmJsWasmTransaction
   transaction: ExecuteInstruction;
 }
 
+export interface TronTransaction
+  extends TypedTransactionBase<TronWebTypes.Transaction> {
+  type: ProviderType.Tron;
+  transaction: TronWebTypes.Transaction;
+}
+
 export type TypedTransaction =
   | EthersV5Transaction
   // | EthersV6Transaction
   | ViemTransaction
   | SolanaWeb3Transaction
   | CosmJsTransaction
-  | CosmJsWasmTransaction;
+  | CosmJsWasmTransaction
+  | TronTransaction;
 
 /**
  * Transaction receipt/response with discriminated union of provider type
@@ -263,9 +289,16 @@ export interface CosmJsWasmTransactionReceipt
   receipt: DeliverTxResponse;
 }
 
+export interface TronTransactionReceipt
+  extends TypedTransactionReceiptBase<TronWebTypes.TransactionInfo> {
+  type: ProviderType.Tron;
+  receipt: TronWebTypes.TransactionInfo;
+}
+
 export type TypedTransactionReceipt =
   | EthersV5TransactionReceipt
   | ViemTransactionReceipt
   | SolanaWeb3TransactionReceipt
   | CosmJsTransactionReceipt
-  | CosmJsWasmTransactionReceipt;
+  | CosmJsWasmTransactionReceipt
+  | TronTransactionReceipt;
