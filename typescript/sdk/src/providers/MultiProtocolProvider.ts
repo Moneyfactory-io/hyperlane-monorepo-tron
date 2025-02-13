@@ -24,6 +24,7 @@ import {
   ProviderMap,
   ProviderType,
   SolanaWeb3Provider,
+  TronProvider,
   TypedProvider,
   TypedTransaction,
   ViemProvider,
@@ -202,6 +203,13 @@ export class MultiProtocolProvider<
     return this.getSpecificProvider<CosmJsWasmProvider['provider']>(
       chainNameOrId,
       ProviderType.CosmJsWasm,
+    );
+  }
+
+  getTronProvider(chainNameOrId: ChainNameOrId): TronProvider['provider'] {
+    return this.getSpecificProvider<TronProvider['provider']>(
+      chainNameOrId,
+      ProviderType.Tron,
     );
   }
 

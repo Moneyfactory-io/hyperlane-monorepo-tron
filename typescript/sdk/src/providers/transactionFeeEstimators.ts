@@ -20,6 +20,8 @@ import {
   ProviderType,
   SolanaWeb3Provider,
   SolanaWeb3Transaction,
+  TronProvider,
+  TronTransaction,
   TypedProvider,
   TypedTransaction,
   ViemProvider,
@@ -222,6 +224,25 @@ export async function estimateTransactionFeeCosmJsWasm({
   });
 }
 
+// TODO: Transaction fee tron
+// main problem is that I don't know is transaction interface correct
+// and how it get there
+// so I want to write this method after TokenAdapter is ready
+// -------------------------------
+// export async function estimateTransactionFeeTron({
+//   transaction,
+//   provider,
+//   estimatedGasPrice,
+// }: {
+//   transaction: TronTransaction,
+//   provider: TronProvider,
+//   estimatedGasPrice: Numbersih,
+// }): Promise<TransactionFeeEstimate> {
+//   const c = tran
+//
+//   const fee = provider.provider.transactionBuilder.estimateEnergy()
+// }
+
 export function estimateTransactionFee({
   transaction,
   provider,
@@ -280,6 +301,13 @@ export function estimateTransactionFee({
       sender,
       senderPubKey,
     });
+  } else if (
+    transaction.type === ProviderType.Tron &&
+    provider.type === ProviderType.Tron
+  ) {
+    const { transactionOverrides } = chainMetadata;
+    const estimatedGasPrice = transactionOverrides?.gasPrice as Numberish;
+    assert(estimatedGasPrice, 'gasPrice required from Tron gas estimation');
   } else {
     throw new Error(
       `Unsupported transaction type ${transaction.type} or provider type ${provider.type} for gas estimation`,

@@ -5,6 +5,7 @@ export enum ProtocolType {
   Ethereum = 'ethereum',
   Sealevel = 'sealevel',
   Cosmos = 'cosmos',
+  Tron = 'tron',
 }
 // A type that also allows for literal values of the enum
 export type ProtocolTypeValue = `${ProtocolType}`;
@@ -13,6 +14,7 @@ export const ProtocolSmallestUnit = {
   [ProtocolType.Ethereum]: 'wei',
   [ProtocolType.Sealevel]: 'lamports',
   [ProtocolType.Cosmos]: 'uATOM',
+  [ProtocolType.Tron]: 'sun',
 };
 
 /********* BASIC TYPES *********/
@@ -21,6 +23,7 @@ export type EvmChainId = number;
 export type ChainId = string | number;
 export type Address = string;
 export type AddressBytes32 = string;
+export type AddressBase58 = string;
 export type ChainCaip2Id = `${string}:${string}`; // e.g. ethereum:1 or sealevel:1399811149
 export type TokenCaip19Id = `${string}:${string}/${string}:${string}`; // e.g. ethereum:1/erc20:0x6b175474e89094c44da98b954eedeac495271d0f
 export type HexString = string;

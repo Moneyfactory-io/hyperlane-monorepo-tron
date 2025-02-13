@@ -2,6 +2,7 @@ import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { StargateClient } from '@cosmjs/stargate';
 import { Connection } from '@solana/web3.js';
 import { providers } from 'ethers';
+import { TronWeb } from 'tronweb';
 import { createPublicClient, http } from 'viem';
 
 import { ProtocolType, isNumeric } from '@hyperlane-xyz/utils';
@@ -14,6 +15,7 @@ import {
   EthersV5Provider,
   ProviderType,
   SolanaWeb3Provider,
+  TronProvider,
   TypedProvider,
   ViemProvider,
 } from './ProviderType.js';
@@ -109,6 +111,17 @@ export function defaultCosmJsWasmProviderBuilder(
   };
 }
 
+export function defaultTronProviderBuilder(
+  rpcUrls: RpcUrl[],
+  _network: number | string,
+): TronProvider {
+  if (!rpcUrls.length) throw new Error('No RPC URLs provided');
+  return {
+    type: ProviderType.Tron,
+    provider: new TronWeb({ fullHost: rpcUrls[0].http }),
+  };
+}
+
 // Kept for backwards compatibility
 export function defaultProviderBuilder(
   rpcUrls: RpcUrl[],
@@ -128,6 +141,7 @@ export const defaultProviderBuilderMap: ProviderBuilderMap = {
   [ProviderType.SolanaWeb3]: defaultSolProviderBuilder,
   [ProviderType.CosmJs]: defaultCosmJsProviderBuilder,
   [ProviderType.CosmJsWasm]: defaultCosmJsWasmProviderBuilder,
+  [ProviderType.Tron]: defaultTronProviderBuilder,
 };
 
 export const protocolToDefaultProviderBuilder: Record<
