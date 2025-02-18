@@ -1,9 +1,10 @@
-import { Types } from 'tronweb';
+import { Contract, Types } from 'tronweb';
 
-import { Address, Numberish } from '@hyperlane-xyz/utils';
+import { Address } from '@hyperlane-xyz/utils';
 
 import { BaseTronAdapter } from '../../app/MultiProtocolApp.js';
 import { evmToTronAddressHex } from '../../utils/tron.js';
+import { TokenMetadata } from '../types.js';
 
 import { ITokenAdapter, TransferParams } from './ITokenAdapter.js';
 
@@ -13,50 +14,97 @@ export class TronNativeTokenAdapter
   extends BaseTronAdapter
   implements ITokenAdapter<Types.Transaction>
 {
-  // evm compatible address
-  async getBalance(address: Address): Promise<bigint> {
-    // TODO: Add address prefix support
-    const tronAddress = this.getProvider().address.toHex(
-      evmToTronAddressHex(address),
-    );
+  getTronAddress(address: Address): Address {
+    const provider = this.getProvider();
 
-    const balance = await this.getProvider().trx.getBalance(tronAddress);
+    const tronHex = provider.address.toHex(address);
+
+    // tronlike address
+    return provider.address.fromHex(tronHex);
+  }
+
+  /**
+   * address - evm compatible address
+   **/
+  async getBalance(address: Address): Promise<bigint> {
+    const balance = await this.getProvider().trx.getBalance(
+      this.getTronAddress(address),
+    );
 
     return BigInt(balance);
   }
-  getTotalSupply(): Promise<bigint | undefined> {
-    throw new Error('Method not implemented.');
+
+  async getTotalSupply(): Promise<bigint | undefined> {
+    // Not implemented.
+    return undefined;
   }
-  getMetadata(
-    isNft?: boolean | undefined,
-  ): Promise<{
-    symbol: string;
-    name: string;
-    totalSupply: string | number;
-    decimals?: number | undefined;
-    scale?: number | undefined;
-    isNft?: boolean | undefined;
-  }> {
-    throw new Error('Method not implemented.');
+
+  getMetadata(): Promise<TokenMetadata> {
+    throw new Error('Metadata not available to native tokes.');
   }
-  getMinimumTransferAmount(recipient: string): Promise<bigint> {
-    throw new Error('Method not implemented.');
+
+  async getMinimumTransferAmount(_recipient: Address): Promise<bigint> {
+    return 0n;
   }
-  isApproveRequired(
-    owner: string,
-    spender: string,
-    weiAmountOrId: Numberish,
-  ): Promise<boolean> {
-    throw new Error('Method not implemented.');
+
+  async isApproveRequired(): Promise<boolean> {
+    return false;
   }
+
   populateApproveTx(
-    params: TransferParams,
-  ): Promise<Types.Transaction<Types.ContractParamter>> {
-    throw new Error('Method not implemented.');
+    _transferParams: TransferParams,
+  ): Promise<Types.Transaction> {
+    throw new Error('Approve not required for native tokens.');
   }
-  populateTransferTx(
-    params: TransferParams,
-  ): Promise<Types.Transaction<Types.ContractParamter>> {
-    throw new Error('Method not implemented.');
+
+  async populateTransferTx({
+    recipient,
+    weiAmountOrId,
+  }: TransferParams): Promise<Types.Transaction> {
+    const tx = this.getProvider().transactionBuilder.sendTrx(
+      recipient,
+      Number(weiAmountOrId),
+    );
+
+    this.getProvider().contract().asd();
+    return tx;
+  }
+}
+
+// probably change Types.Transaction to Method interface
+// Interacts with TRC-20 contracts
+export class TronTRC20TokenAdapter
+  extends TronNativeTokenAdapter
+  implements ITokenAdapter<Types.Transaction>
+{
+  public contract: Contract | null = null;
+
+  async init() {
+    if (this.contract) return;
+
+    try {
+      this.contract = await this.getProvider()
+        .contract()
+        .at(this.addresses.token);
+    } catch {
+      throw new Error('Failed to initialize token contract');
+    }
+  }
+
+  async getContract() {
+    if (!this.contract) {
+      await this.init();
+    }
+
+    return this.contract as Contract;
+  }
+
+  /**
+   * address - evm compatible address
+   **/
+  override async getBalance(address: Address): Promise<bigint> {
+    const contract = await this.getContract();
+
+    return BigInt(contract.getBalance(this.getTronAddress(address)));
   }
 }

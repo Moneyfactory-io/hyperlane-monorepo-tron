@@ -225,6 +225,7 @@ export async function estimateTransactionFeeCosmJsWasm({
 }
 
 // TODO: Transaction fee tron
+// use fromSun from TronWeb for estimation
 // main problem is that I don't know is transaction interface correct
 // and how it get there
 // so I want to write this method after TokenAdapter is ready
