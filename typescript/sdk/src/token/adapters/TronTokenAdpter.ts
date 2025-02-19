@@ -1,9 +1,9 @@
+import { BigNumber } from 'ethers';
 import { Contract, Types } from 'tronweb';
 
-import { Address } from '@hyperlane-xyz/utils';
+import { Address, Numberish } from '@hyperlane-xyz/utils';
 
 import { BaseTronAdapter } from '../../app/MultiProtocolApp.js';
-import { evmToTronAddressHex } from '../../utils/tron.js';
 import { TokenMetadata } from '../types.js';
 
 import { ITokenAdapter, TransferParams } from './ITokenAdapter.js';
@@ -47,7 +47,11 @@ export class TronNativeTokenAdapter
     return 0n;
   }
 
-  async isApproveRequired(): Promise<boolean> {
+  async isApproveRequired(
+    _owner: Address,
+    _spender: Address,
+    _weiAmountOrId: Numberish,
+  ): Promise<boolean> {
     return false;
   }
 
@@ -66,7 +70,6 @@ export class TronNativeTokenAdapter
       Number(weiAmountOrId),
     );
 
-    this.getProvider().contract().asd();
     return tx;
   }
 }
@@ -106,5 +109,54 @@ export class TronTRC20TokenAdapter
     const contract = await this.getContract();
 
     return BigInt(contract.getBalance(this.getTronAddress(address)));
+  }
+
+  // TODO: check if we should check nft
+  override async getMetadata(): Promise<TokenMetadata> {
+    const issuedTokens = await this.getProvider().trx.getTokensIssuedByAddress(
+      this.addresses.token,
+    );
+    const token = Object.values(issuedTokens).at(0);
+
+    if (!token) {
+      throw new Error("Can't get metadata for token");
+    }
+
+    return {
+      decimals: token.precision,
+      symbol: token.abbr,
+      name: token.name,
+      totalSupply: token.total_supply.toString(),
+    };
+  }
+
+  override async isApproveRequired(
+    owner: Address,
+    spender: Address,
+    weiAmountOrId: Numberish,
+  ): Promise<boolean> {
+    const contract = await this.getContract();
+
+    const allowance: bigint = await contract.allowance(
+      this.getTronAddress(owner),
+      this.getTronAddress(spender),
+    );
+
+    return BigNumber.from(allowance).lt(weiAmountOrId);
+  }
+
+  // wanna rewrite it to contract call but now it imposible
+  override populateApproveTx({
+    weiAmountOrId,
+    recipient,
+  }: TransferParams): Promise<Types.Transaction> {
+    const provider = this.getProvider();
+
+    return provider.transactionBuilder.triggerSmartContract(
+      this.addresses.token,
+      'approve',
+      {},
+      [],
+    );
   }
 }
