@@ -102,6 +102,15 @@ export class TronTRC20TokenAdapter
     return this.contract as Contract;
   }
 
+  // TODO: Get method params from instances
+  // private _getMethodInstance(method: ) {
+  //
+  // }
+  //
+  // private _getRawParameters(method: ) {
+  //
+  // }
+
   /**
    * address - evm compatible address
    **/
@@ -156,7 +165,7 @@ export class TronTRC20TokenAdapter
       this.addresses.token,
       'approve',
       {},
-      [],
+      [{}],
     );
   }
 }
