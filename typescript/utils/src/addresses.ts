@@ -349,7 +349,10 @@ export function bytesToProtocolAddress(
     bytes.length && !bytes.every((b) => b == 0),
     'address bytes must not be empty',
   );
-  if (toProtocol === ProtocolType.Ethereum) {
+  if (
+    toProtocol === ProtocolType.Ethereum ||
+    toProtocol === ProtocolType.Tron // Tron has internal address convertions from EMV addresses, so just use evm address
+  ) {
     return bytesToAddressEvm(bytes);
   } else if (toProtocol === ProtocolType.Sealevel) {
     return bytesToAddressSol(bytes);
