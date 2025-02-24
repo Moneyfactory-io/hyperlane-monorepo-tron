@@ -7,7 +7,7 @@ export interface TransferParams {
   recipient: Address;
   // Required for Cosmos + Solana + Tron
   fromAccountOwner?: Address;
-  // Required for Solana
+  // Required for Solana + Tron
   fromTokenAccount?: Address;
 }
 

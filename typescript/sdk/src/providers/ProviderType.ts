@@ -46,6 +46,7 @@ export const PROTOCOL_TO_DEFAULT_PROVIDER_TYPE: Record<
   [ProtocolType.Ethereum]: ProviderType.EthersV5,
   [ProtocolType.Sealevel]: ProviderType.SolanaWeb3,
   [ProtocolType.Cosmos]: ProviderType.CosmJsWasm,
+  [ProtocolType.Tron]: ProviderType.Tron,
 };
 
 export type ProviderMap<Value> = Partial<Record<ProviderType, Value>>;

@@ -22,4 +22,10 @@ export const PROTOCOL_TO_DEFAULT_NATIVE_TOKEN: Record<
     name: 'Atom',
     symbol: 'ATOM',
   },
+  [ProtocolType.Tron]: {
+    decimals: 6,
+    denom: 'SUN',
+    name: 'Tron',
+    symbol: 'TRX',
+  },
 };
