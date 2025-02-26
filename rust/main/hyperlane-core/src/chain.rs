@@ -1,7 +1,7 @@
 #![allow(missing_docs)]
 
 use std::{
-    fmt::{Debug, Formatter},
+    fmt::{format, Debug, Formatter},
     hash::{Hash, Hasher},
     num::NonZeroU32,
 };
@@ -276,6 +276,8 @@ pub enum HyperlaneDomainProtocol {
     Sealevel,
     /// A Cosmos-based chain type which uses hyperlane-cosmos.
     Cosmos,
+    /// A Tron-base chain type which uses hyperlane-tron
+    Tron,
 }
 
 impl HyperlaneDomainProtocol {
@@ -286,6 +288,7 @@ impl HyperlaneDomainProtocol {
             Fuel => format!("{:?}", addr),
             Sealevel => format!("{:?}", addr),
             Cosmos => format!("{:?}", addr),
+            Tron => format!("{:?}", addr),
         }
     }
 }
@@ -592,7 +595,7 @@ impl HyperlaneDomain {
         use HyperlaneDomainProtocol::*;
         let protocol = self.domain_protocol();
         many_to_one!(match protocol {
-            IndexMode::Block: [Ethereum, Cosmos],
+            IndexMode::Block: [Ethereum, Cosmos, Tron],
             IndexMode::Sequence : [Sealevel, Fuel],
         })
     }
