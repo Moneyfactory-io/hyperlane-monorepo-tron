@@ -5,9 +5,9 @@ import { TokenMetadata } from '../types.js';
 export interface TransferParams {
   weiAmountOrId: Numberish;
   recipient: Address;
-  // Required for Cosmos + Solana
+  // Required for Cosmos + Solana + Tron
   fromAccountOwner?: Address;
-  // Required for Solana
+  // Required for Solana + Tron
   fromTokenAccount?: Address;
 }
 

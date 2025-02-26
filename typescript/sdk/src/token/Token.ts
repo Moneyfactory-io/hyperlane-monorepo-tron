@@ -59,6 +59,11 @@ import {
   SealevelNativeTokenAdapter,
   SealevelTokenAdapter,
 } from './adapters/SealevelTokenAdapter.js';
+import {
+  TronHypSyntheticAdapter,
+  TronNativeTokenAdapter,
+  TronTRC20TokenAdapter,
+} from './adapters/TronTokenAdpter.js';
 import { PROTOCOL_TO_DEFAULT_NATIVE_TOKEN } from './nativeTokenMetadata.js';
 
 // Declaring the interface in addition to class allows
@@ -150,6 +155,12 @@ export class Token implements IToken {
         {},
         addressOrDenom,
       );
+    } else if (standard === TokenStandard.TronNative) {
+      return new TronNativeTokenAdapter(chainName, multiProvider, {});
+    } else if (standard === TokenStandard.TRC20) {
+      return new TronTRC20TokenAdapter(chainName, multiProvider, {
+        token: addressOrDenom,
+      });
     } else if (this.isHypToken()) {
       return this.getHypAdapter(multiProvider);
     } else if (this.isIbcToken()) {
@@ -292,6 +303,10 @@ export class Token implements IToken {
       const connection = this.getConnectionForChain(destination);
       assert(connection, `No connection found for chain ${destination}`);
       return this.getIbcAdapter(multiProvider, connection);
+    } else if (standard === TokenStandard.TronHypNative) {
+      return new TronHypSyntheticAdapter(chainName, multiProvider, {
+        token: addressOrDenom,
+      });
     } else {
       throw new Error(`No hyp adapter found for token standard: ${standard}`);
     }

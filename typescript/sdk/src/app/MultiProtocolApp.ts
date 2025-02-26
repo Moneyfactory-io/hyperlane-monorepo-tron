@@ -16,6 +16,7 @@ import {
   CosmJsWasmProvider,
   EthersV5Provider,
   SolanaWeb3Provider,
+  TronProvider,
   TypedProvider,
 } from '../providers/ProviderType.js';
 import { ChainMap, ChainName } from '../types.js';
@@ -92,6 +93,14 @@ export class BaseSealevelAdapter extends BaseAppAdapter {
     programId: string | PublicKey,
   ): PublicKey {
     return BaseSealevelAdapter.derivePda(seeds, programId);
+  }
+}
+
+export class BaseTronAdapter extends BaseAppAdapter {
+  public readonly protocol: ProtocolType = ProtocolType.Tron;
+
+  public getProvider(): TronProvider['provider'] {
+    return this.multiProvider.getTronProvider(this.chainName);
   }
 }
 

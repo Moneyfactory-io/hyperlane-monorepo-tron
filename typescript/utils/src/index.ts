@@ -149,6 +149,7 @@ export { isNullish, isNumeric } from './typeof.js';
 export {
   Address,
   AddressBytes32,
+  AddressBase58,
   Annotated,
   Announcement,
   CallData,

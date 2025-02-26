@@ -43,6 +43,12 @@ export enum TokenStandard {
   CwHypNative = 'CwHypNative',
   CwHypCollateral = 'CwHypCollateral',
   CwHypSynthetic = 'CwHypSynthetic',
+
+  // Tron
+  TronNative = 'TronNative',
+  TRC20 = 'TRC20',
+  TRC721 = 'TRC721',
+  TronHypNative = 'TronHypNative',
 }
 
 // Allows for omission of protocol field in token args
@@ -82,6 +88,12 @@ export const TOKEN_STANDARD_TO_PROTOCOL: Record<TokenStandard, ProtocolType> = {
   CwHypNative: ProtocolType.Cosmos,
   CwHypCollateral: ProtocolType.Cosmos,
   CwHypSynthetic: ProtocolType.Cosmos,
+
+  // Tron
+  TronNative: ProtocolType.Tron,
+  TRC20: ProtocolType.Tron,
+  TRC721: ProtocolType.Tron,
+  TronHypNative: ProtocolType.Tron,
 };
 
 export const TOKEN_STANDARD_TO_PROVIDER_TYPE: Record<
@@ -96,6 +108,7 @@ export const TOKEN_NFT_STANDARDS = [
   TokenStandard.ERC721,
   TokenStandard.CosmosIcs721,
   TokenStandard.CW721,
+  TokenStandard.TRC721,
   // TODO solana here
 ];
 
@@ -131,6 +144,7 @@ export const TOKEN_HYP_STANDARDS = [
   TokenStandard.CwHypNative,
   TokenStandard.CwHypCollateral,
   TokenStandard.CwHypSynthetic,
+  TokenStandard.TronHypNative,
 ];
 
 export const TOKEN_MULTI_CHAIN_STANDARDS = [
@@ -171,4 +185,5 @@ export const PROTOCOL_TO_NATIVE_STANDARD: Record<ProtocolType, TokenStandard> =
     [ProtocolType.Ethereum]: TokenStandard.EvmNative,
     [ProtocolType.Cosmos]: TokenStandard.CosmosNative,
     [ProtocolType.Sealevel]: TokenStandard.SealevelNative,
+    [ProtocolType.Tron]: TokenStandard.TronNative,
   };
